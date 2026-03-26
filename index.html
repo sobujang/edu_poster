@@ -678,47 +678,80 @@
 
         function drawThumb(cv, d) {
             const c = cv.getContext('2d'), W = cv.width, H = cv.height;
-            fillBG(c, W, H); const P = 44;
-            c.fillStyle = AC; c.fillRect(0, 0, 8, H);
-            c.fillStyle = INK; c.fillRect(8, 0, W - 8, 52);
-            c.fillStyle = 'rgba(255,255,255,.9)'; c.font = 'bold 14px Space Grotesk,sans-serif';
-            c.textAlign = 'left'; c.textBaseline = 'middle'; c.fillText((d.org || 'Organization').toUpperCase(), P, 26);
-            c.fillStyle = AC; c.font = 'bold 14px Space Grotesk,sans-serif'; c.textAlign = 'right'; c.fillText(getPreLabel().toUpperCase(), W - P, 26);
+            fillBG(c, W, H);
+            const P = 70; // Padding
 
-            const tsz = d.title.length > 14 ? 34 : 44;
-            c.fillStyle = INK; c.font = `bold ${tsz}px Space Grotesk,sans-serif`;
-            c.textAlign = 'left'; c.textBaseline = 'top';
-            let ty = 68, tl = '';
-            for (const w of d.title.split(' ')) { const t = tl ? tl + ' ' + w : w; if (c.measureText(t).width > W * 0.54 && tl) { c.fillText(tl, P, ty); tl = w; ty += tsz * 1.18; } else tl = t; }
-            if (tl) { c.fillText(tl, P, ty); ty += tsz * 1.18; }
-            if (d.subtitle) { c.fillStyle = '#555'; c.font = '500 16px Space Grotesk,sans-serif'; c.fillText(d.subtitle.slice(0, 32), P, ty + 4); ty += 24; }
-            hline(c, P, ty + 8, W * 0.52, '#ccc', 1);
-            if (d.date) { c.fillStyle = INK; c.font = 'bold 20px Space Grotesk,sans-serif'; c.textAlign = 'left'; c.textBaseline = 'top'; c.fillText(d.date, P, ty + 16); }
-            if (d.time) { c.fillStyle = '#666'; c.font = '14px Space Grotesk,sans-serif'; c.fillText(d.time, P, ty + 42); }
-            if (d.venue) { c.fillStyle = '#888'; c.font = '12px Space Grotesk,sans-serif'; c.fillText(d.venue.length > 26 ? d.venue.slice(0, 26) + '…' : d.venue, P, ty + 60); }
+            // 1. Accent Bar (Left side)
+            c.fillStyle = AC;
+            c.fillRect(0, 0, 16, H);
 
-            const rx = W * 0.60; vline(c, rx, 58, H - 58 - 44, '#ccc', 1);
-            const rp = rx + 28, rw = W - rp - P;
-            c.fillStyle = INK; c.font = 'bold 11px Space Grotesk,sans-serif'; c.textAlign = 'left'; c.textBaseline = 'top';
-            c.fillText('PROGRAM', rp, 64); c.fillStyle = AC; c.fillRect(rp, 78, 18, 2);
+            // 2. Organization & Category Header
+            c.fillStyle = '#777';
+            c.font = 'bold 20px Space Grotesk,sans-serif';
+            c.textAlign = 'left';
+            c.textBaseline = 'top';
+            c.fillText((d.org || 'Organization').toUpperCase(), P, 48);
 
-            const parts = d.parts || []; let py = 86;
-            parts.slice(0, 3).forEach(pt => {
-                c.fillStyle = hexRgba(AC, .15); rrect(c, rp, py, 16, 16, 3); c.fill();
-                c.fillStyle = AC; c.font = 'bold 9px Space Grotesk,sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(pt.n, rp + 8, py + 8);
-                c.fillStyle = INK; c.font = 'bold 13px Space Grotesk,sans-serif'; c.textAlign = 'left'; c.textBaseline = 'top';
-                c.fillText(pt.title.length > 18 ? pt.title.slice(0, 18) + '…' : pt.title, rp + 22, py + 1); py += 20;
-                (pt.subs || []).slice(0, 2).forEach(s => { if (!s) return; c.fillStyle = AC; c.font = '11px Space Grotesk,sans-serif'; c.fillText('—', rp + 4, py); c.fillStyle = '#444'; c.font = '11px Space Grotesk,sans-serif'; c.fillText(s.length > 20 ? s.slice(0, 20) + '…' : s, rp + 16, py); py += 15; });
-                py += 6;
-            });
-            if (d.effect) {
-                hline(c, rp, py + 2, rw, '#ccc', 1);
-                c.fillStyle = AC; c.font = 'bold 9px Space Grotesk,sans-serif'; c.textAlign = 'left'; c.textBaseline = 'top'; c.fillText('기대 효과', rp, py + 10);
-                c.fillStyle = '#333'; c.font = '11px Space Grotesk,sans-serif'; wrapLines(c, d.effect, rp, py + 24, rw, 15, 2);
+            c.fillStyle = AC;
+            c.textAlign = 'right';
+            c.font = 'bold 18px Space Grotesk,sans-serif';
+            c.fillText(getPreLabel().toUpperCase(), W - 50, 48);
+
+            // 3. Main Title
+            const tsz = d.title.length > 12 ? 58 : 72;
+            c.fillStyle = INK;
+            c.font = `bold ${tsz}px Space Grotesk,sans-serif`;
+            c.textAlign = 'left';
+            c.textBaseline = 'top';
+            let ty = 100;
+            let tl = '';
+            for (const w of d.title.split(' ')) {
+                const t = tl ? tl + ' ' + w : w;
+                if (c.measureText(t).width > W - P - 50 && tl) {
+                    c.fillText(tl, P, ty);
+                    tl = w;
+                    ty += tsz * 1.1;
+                } else tl = t;
             }
-            c.fillStyle = AC; c.fillRect(8, H - 40, W - 8, 40);
-            c.fillStyle = '#fff'; c.font = 'bold 13px Space Grotesk,sans-serif'; c.textAlign = 'left'; c.textBaseline = 'middle'; c.fillText((d.org || '').toUpperCase(), P, H - 20);
-            if (d.date) { c.fillStyle = 'rgba(255,255,255,.7)'; c.font = '12px Space Grotesk,sans-serif'; c.textAlign = 'right'; c.fillText(d.date, W - P, H - 20); }
+            if (tl) {
+                c.fillText(tl, P, ty);
+                ty += tsz * 1.15;
+            }
+
+            // 4. Subtitle
+            if (d.subtitle) {
+                c.fillStyle = '#555';
+                c.font = '500 28px Space Grotesk,sans-serif';
+                ty = wrapLines(c, d.subtitle, P, ty, W - P - 50, 38, 2) + 20;
+            }
+
+            // 5. Divider
+            hline(c, P, ty, 80, AC, 4);
+            ty += 40;
+
+            // 6. Info Group (Date, Time, Venue)
+            const infoLabelW = 90;
+            const drawInfoLine = (label, val, y) => {
+                if (!val) return y;
+                c.fillStyle = '#888';
+                c.font = 'bold 18px Space Grotesk,sans-serif';
+                c.textAlign = 'left';
+                c.fillText(label, P, y + 4);
+
+                c.fillStyle = INK;
+                c.font = '500 22px Space Grotesk,sans-serif';
+                c.fillText(val, P + infoLabelW, y);
+                return y + 40;
+            };
+
+            ty = drawInfoLine('DATE', d.date, ty);
+            ty = drawInfoLine('TIME', d.time, ty);
+            ty = drawInfoLine('VENUE', d.venue, ty);
+
+            // 7. Decorative Element
+            c.strokeStyle = hexRgba(AC, 0.2);
+            c.lineWidth = 1;
+            c.strokeRect(W - 120, H - 120, 80, 80);
         }
 
         function renderAll() {
