@@ -632,42 +632,42 @@
             if (d.venue) { c.fillStyle = 'rgba(255,255,255,.9)'; c.font = '500 28px Space Grotesk,sans-serif'; c.textAlign = 'right'; const sv = d.venue.length > 18 ? d.venue.slice(0, 18) + '…' : d.venue; c.fillText(sv, W - P, sm); }
 
             let curY = slabY + slabH + 52;
-            c.fillStyle = INK; c.font = 'bold 26px Space Grotesk,sans-serif'; c.textAlign = 'left'; c.textBaseline = 'top';
-            c.fillText('PROGRAM', P, curY); c.fillStyle = AC; c.fillRect(P, curY + 34, 48, 4); curY += 54;
+            c.fillStyle = INK; c.font = 'bold 32px Space Grotesk,sans-serif'; c.textAlign = 'left'; c.textBaseline = 'top';
+            c.fillText('PROGRAM', P, curY); c.fillStyle = AC; c.fillRect(P, curY + 42, 56, 4); curY += 64;
 
             const parts = d.parts || [];
             parts.forEach(pt => {
-                c.fillStyle = hexRgba(AC, .13); rrect(c, P, curY, 44, 44, 8); c.fill();
-                c.fillStyle = AC; c.font = 'bold 22px Space Grotesk,sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
-                c.fillText(pt.n, P + 22, curY + 22);
-                c.fillStyle = INK; c.font = 'bold 30px Space Grotesk,sans-serif'; c.textAlign = 'left'; c.textBaseline = 'top';
-                const ptW = W - P * 2 - 56; let ptly = curY + 4, ptline = '';
-                for (const w of pt.title.split(' ')) { const t = ptline ? ptline + ' ' + w : w; if (c.measureText(t).width > ptW && ptline) { c.fillText(ptline, P + 56, ptly); ptline = w; ptly += 36; } else ptline = t; }
-                if (ptline) c.fillText(ptline, P + 56, ptly);
-                curY = ptly + 42;
+                c.fillStyle = hexRgba(AC, .13); rrect(c, P, curY, 48, 48, 8); c.fill();
+                c.fillStyle = AC; c.font = 'bold 24px Space Grotesk,sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+                c.fillText(pt.n, P + 24, curY + 24);
+                c.fillStyle = INK; c.font = 'bold 38px Space Grotesk,sans-serif'; c.textAlign = 'left'; c.textBaseline = 'top';
+                const ptW = W - P * 2 - 64; let ptly = curY + 4, ptline = '';
+                for (const w of pt.title.split(' ')) { const t = ptline ? ptline + ' ' + w : w; if (c.measureText(t).width > ptW && ptline) { c.fillText(ptline, P + 64, ptly); ptline = w; ptly += 44; } else ptline = t; }
+                if (ptline) c.fillText(ptline, P + 64, ptly);
+                curY = ptly + 52;
                 (pt.subs || []).forEach(sub => {
                     if (!sub) return;
-                    c.fillStyle = AC; c.font = '500 26px Space Grotesk,sans-serif'; c.textAlign = 'left'; c.textBaseline = 'top'; c.fillText('—', P + 12, curY);
-                    c.fillStyle = '#333'; c.font = '26px Space Grotesk,sans-serif';
-                    curY = wrapLines(c, sub, P + 46, curY, W - P * 2 - 46, 32, 2) + 2;
+                    c.fillStyle = AC; c.font = '500 32px Space Grotesk,sans-serif'; c.textAlign = 'left'; c.textBaseline = 'top'; c.fillText('—', P + 12, curY);
+                    c.fillStyle = '#333'; c.font = '32px Space Grotesk,sans-serif';
+                    curY = wrapLines(c, sub, P + 54, curY, W - P * 2 - 54, 40, 2) + 2;
                 });
-                curY += 16; hline(c, P, curY, W - P * 2, '#ddd', 1); curY += 22;
+                curY += 16; hline(c, P, curY, W - P * 2, '#ddd', 1); curY += 26;
             });
 
             if (d.effect) {
-                c.fillStyle = INK; c.font = 'bold 26px Space Grotesk,sans-serif'; c.textAlign = 'left'; c.textBaseline = 'top';
-                c.fillText('기대 효과', P, curY); c.fillStyle = AC; c.fillRect(P, curY + 34, 48, 4); curY += 54;
-                c.fillStyle = '#222'; c.font = '26px Space Grotesk,sans-serif';
-                curY = wrapLines(c, d.effect, P, curY, W - P * 2, 34, 4) + 8;
+                c.fillStyle = INK; c.font = 'bold 32px Space Grotesk,sans-serif'; c.textAlign = 'left'; c.textBaseline = 'top';
+                c.fillText('기대 효과', P, curY); c.fillStyle = AC; c.fillRect(P, curY + 42, 56, 4); curY += 64;
+                c.fillStyle = '#222'; c.font = '32px Space Grotesk,sans-serif';
+                curY = wrapLines(c, d.effect, P, curY, W - P * 2, 42, 4) + 12;
             }
             const exts = d.extras || [];
             if (exts.length) {
-                hline(c, P, curY + 8, W - P * 2, '#ccc', 1); curY += 30;
+                hline(c, P, curY + 8, W - P * 2, '#ccc', 1); curY += 36;
                 exts.slice(0, 6).forEach(({ k, v }) => {
-                    c.fillStyle = '#999'; c.font = 'bold 22px Space Grotesk,sans-serif'; c.textAlign = 'left'; c.textBaseline = 'top';
+                    c.fillStyle = '#999'; c.font = 'bold 24px Space Grotesk,sans-serif'; c.textAlign = 'left'; c.textBaseline = 'top';
                     c.fillText((k || '').toUpperCase(), P, curY);
-                    c.fillStyle = INK; c.font = '500 28px Space Grotesk,sans-serif';
-                    c.fillText(v.length > 20 ? v.slice(0, 20) + '…' : v, P + 200, curY + 2); curY += 42;
+                    c.fillStyle = INK; c.font = '500 32px Space Grotesk,sans-serif';
+                    c.fillText(v.length > 20 ? v.slice(0, 20) + '…' : v, P + 220, curY + 2); curY += 50;
                 });
             }
             hline(c, P, H - 80, W - P * 2, INK, 2); c.fillStyle = AC; c.fillRect(P, H - 80, 56, 4);
