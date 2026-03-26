@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>교육 포스터 & 썸네일 생성기</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: #f0ede8;
+            color: #111
+        }
+
+        .root {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            height: 100vh;
+            overflow: hidden
+        }
+
+        .sidebar {
+            background: #f7f5f0;
+            border-right: 1px solid #ddd;
+            padding: 1rem;
+            overflow-y: auto;
+            height: 100vh
+        }
+
+        .main {
+            padding: 1rem;
+            overflow-y: auto;
+            height: 100vh;
+            background: #e8e5e0
+        }
+
+        .sec {
+            font-size: 10px;
+            font-weight: 500;
+            letter-spacing: .1em;
+            color: #999;
+            text-transform: uppercase;
+            margin: 14px 0 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px
+        }
+
+        .sec::after {
+            content: '';
+            flex: 1;
+            height: .5px;
+            background: #ddd
+        }
+
+        label {
+            font-size: 11px;
+            color: #666;
+            display: block;
+            margin: 7px 0 2px
+        }
+
+        input[type=text],
+        textarea {
+            width: 100%;
+            padding: 6px 9px;
+            font-size: 12px;
+            font-family: 'Space Grotesk', sans-serif;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            color: #111;
+            outline: none
+        }
+
+        input[type=text]:focus,
+        textarea:focus {
+            border-color: #aaa
+        }
+
+        textarea {
+            resize: vertical;
+            line-height: 1.5;
+            min-height: 52px
+        }
+
+        .part-block {
+            background: #fff;
+            border: 1px solid #e0ddd8;
+            border-radius: 7px;
+            padding: 9px;
+            margin-bottom: 6px
+        }
+
+        .part-head {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 7px
+        }
+
+        .part-num {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 700;
+            flex-shrink: 0
+        }
+
+        .part-head input {
+            flex: 1;
+            font-weight: 500;
+            font-size: 12px
+        }
+
+        .part-sub {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 4px;
+            align-items: center
+        }
+
+        .part-sub input {
+            flex: 1;
+            font-size: 11px;
+            padding: 4px 7px
+        }
+
+        .rm {
+            background: none;
+            border: none;
+            color: #bbb;
+            cursor: pointer;
+            font-size: 14px;
+            line-height: 1;
+            padding: 3px
+        }
+
+        .rm:hover {
+            color: #333
+        }
+
+        .add-sub {
+            font-size: 10px;
+            padding: 3px 8px;
+            border-radius: 20px;
+            border: 1px dashed #ccc;
+            background: transparent;
+            color: #999;
+            cursor: pointer;
+            font-family: 'Space Grotesk', sans-serif;
+            width: 100%
+        }
+
+        .add-sub:hover {
+            color: #333
+        }
+
+        .add-part {
+            width: 100%;
+            padding: 6px;
+            font-size: 11px;
+            border-radius: 6px;
+            border: 1px dashed #ccc;
+            background: transparent;
+            color: #999;
+            cursor: pointer;
+            font-family: 'Space Grotesk', sans-serif;
+            margin-top: 3px
+        }
+
+        .add-part:hover {
+            color: #333
+        }
+
+        .sw-row {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            margin-top: 3px
+        }
+
+        .sw {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            flex-shrink: 0;
+            transition: transform .1s
+        }
+
+        .sw.on {
+            border-color: #111;
+            transform: scale(1.15)
+        }
+
+        .cust-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 6px
+        }
+
+        input[type=color] {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 1px solid #ddd;
+            cursor: pointer;
+            padding: 0;
+            background: none
+        }
+
+        .hex {
+            font-size: 11px;
+            font-family: 'DM Mono', monospace;
+            color: #999
+        }
+
+        .bdgs {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+            margin-top: 3px
+        }
+
+        .bdg {
+            padding: 3px 9px;
+            font-size: 10px;
+            border-radius: 20px;
+            cursor: pointer;
+            border: 1px solid #ddd;
+            background: transparent;
+            color: #888;
+            font-family: 'Space Grotesk', sans-serif;
+            transition: all .12s
+        }
+
+        .bdg.on {
+            background: #111;
+            color: #fff;
+            border-color: #111
+        }
+
+        .ef-row {
+            display: grid;
+            grid-template-columns: 72px 1fr 18px;
+            gap: 4px;
+            align-items: start;
+            margin-bottom: 5px
+        }
+
+        .ef-row input {
+            margin: 0
+        }
+
+        .add-ef {
+            width: 100%;
+            margin-top: 2px;
+            padding: 5px;
+            font-size: 11px;
+            border-radius: 5px;
+            border: 1px dashed #ccc;
+            background: transparent;
+            color: #999;
+            cursor: pointer;
+            font-family: 'Space Grotesk', sans-serif
+        }
+
+        .add-ef:hover {
+            color: #333
+        }
+
+        .tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 10px
+        }
+
+        .tab {
+            padding: 5px 13px;
+            font-size: 11px;
+            border-radius: 20px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            background: #fff;
+            color: #888;
+            font-family: 'Space Grotesk', sans-serif;
+            transition: all .12s
+        }
+
+        .tab:hover {
+            border-color: #888;
+            color: #333
+        }
+
+        .tab.on {
+            background: #111;
+            color: #fff;
+            border-color: #111
+        }
+
+        .size-badge {
+            font-size: 10px;
+            font-family: 'DM Mono', monospace;
+            color: #999;
+            margin-bottom: 6px
+        }
+
+        .cv-wrap {
+            display: flex;
+            justify-content: center
+        }
+
+        .cv-wrap.portrait canvas {
+            max-height: 70vh;
+            width: auto;
+            display: block;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, .1)
+        }
+
+        .cv-wrap.landscape canvas {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, .1)
+        }
+
+        .btns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 7px;
+            margin-top: 12px
+        }
+
+        button.act {
+            display: block;
+            width: 100%;
+            padding: 9px;
+            font-size: 12px;
+            font-family: 'Space Grotesk', sans-serif;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            border: 1px solid #ddd;
+            background: #fff;
+            color: #111;
+            transition: all .12s
+        }
+
+        button.act:hover {
+            background: #f0ede8;
+            border-color: #aaa
+        }
+
+        button.act.pri {
+            background: #111;
+            color: #fff;
+            border-color: #111
+        }
+
+        button.act.pri:hover {
+            background: #333
+        }
+
+        .gapcol {
+            display: flex;
+            flex-direction: column;
+            gap: 14px
+        }
+
+        h1 {
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: .05em;
+            color: #333;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e0ddd8
+        }
+    </style>
+</head>
+
+<body>
+    <div class="root">
+        <div class="sidebar">
+            <h1>교육 포스터 & 썸네일 생성기</h1>
+
+            <p class="sec">기본 정보</p>
+            <label>프로그램 제목</label>
+            <input type="text" id="f-title" value="성과창출 리더십 과정">
+            <label>부제목</label>
+            <input type="text" id="f-subtitle" value="실전 중심의 리더십 역량 강화 교육">
+            <label>날짜</label>
+            <input type="text" id="f-date" value="2024.12.06">
+            <label>시간</label>
+            <input type="text" id="f-time" value="09:00 — 18:00">
+            <label>장소</label>
+            <input type="text" id="f-venue" value="서울대학교 문화관 대강당">
+            <label>주최기관</label>
+            <input type="text" id="f-org" value="한국교육학회">
+
+            <p class="sec">기대 효과</p>
+            <textarea id="f-effect" rows="2">소통 역량 향상, 리더십 발휘 능력 강화, 공정한 성과평가 역량 확보</textarea>
+
+            <p class="sec">프로그램 안내</p>
+            <div id="parts-wrap"></div>
+            <button class="add-part" onclick="addPart()">+ Part 추가</button>
+
+            <p class="sec">추가 정보</p>
+            <div id="ef-wrap"></div>
+            <button class="add-ef" onclick="addEF()">+ 항목 추가</button>
+
+            <p class="sec">포인트 컬러</p>
+            <div class="sw-row" id="sw-row"></div>
+            <div class="cust-row">
+                <input type="color" id="cp" value="#e84818" oninput="setColor(this.value,false)">
+                <span style="font-size:11px;color:#888">직접 선택</span>
+                <span class="hex" id="hex-lbl">#e84818</span>
+            </div>
+
+            <p class="sec">교육 유형</p>
+            <div class="bdgs" id="pre-row">
+                <span class="bdg on" data-p="general">일반 강의</span>
+                <span class="bdg" data-p="workshop">워크숍</span>
+                <span class="bdg" data-p="seminar">세미나</span>
+                <span class="bdg" data-p="symposium">심포지엄</span>
+                <span class="bdg" data-p="conference">컨퍼런스</span>
+            </div>
+
+            <div class="btns">
+                <button class="act" onclick="renderAll()">미리보기 갱신</button>
+                <button class="act pri" onclick="dlAll()">PNG 저장 ↓</button>
+            </div>
+        </div>
+
+        <div class="main">
+            <div class="tabs">
+                <button class="tab on" onclick="swTab('p',this)">포스터 (9:16)</button>
+                <button class="tab" onclick="swTab('t',this)">썸네일 (16:9)</button>
+                <button class="tab" onclick="swTab('b',this)">둘 다</button>
+            </div>
+
+            <div id="vp">
+                <p class="size-badge">저장 해상도: 1080 × 1920 px — 스마트폰 9:16</p>
+                <div class="cv-wrap portrait">
+                    <canvas id="cvP" width="1080" height="1920"></canvas>
+                </div>
+            </div>
+
+            <div id="vt" style="display:none">
+                <p class="size-badge">저장 해상도: 960 × 540 px — 16:9</p>
+                <div class="cv-wrap landscape">
+                    <canvas id="cvT" width="960" height="540"></canvas>
+                </div>
+            </div>
+
+            <div id="vb" style="display:none" class="gapcol">
+                <div>
+                    <p class="size-badge">저장 해상도: 1080 × 1920 px — 스마트폰 9:16</p>
+                    <div class="cv-wrap portrait"><canvas id="cvP2" width="1080" height="1920"></canvas></div>
+                </div>
+                <div>
+                    <p class="size-badge">저장 해상도: 960 × 540 px — 16:9</p>
+                    <div class="cv-wrap landscape"><canvas id="cvT2" width="960" height="540"></canvas></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SW = ['#e84818', '#111111', '#0047AB', '#2D6A4F', '#9B2335', '#E08C00', '#6A0DAD', '#1a6b6b'];
+        const PRE = { general: '#e84818', workshop: '#0047AB', seminar: '#2D6A4F', symposium: '#9B2335', conference: '#6A0DAD' };
+        const PRL = { general: 'General Lecture', workshop: 'Workshop', seminar: 'Seminar', symposium: 'Symposium', conference: 'Conference' };
+        let AC = '#e84818', partIds = [], efIds = [], partCount = 0, efCount = 0, subCount = 0;
+
+        function initSW() {
+            const row = document.getElementById('sw-row');
+            SW.forEach((c, i) => {
+                const d = document.createElement('div');
+                d.className = 'sw' + (i === 0 ? ' on' : ''); d.style.background = c;
+                d.onclick = () => { setColor(c, true); row.querySelectorAll('.sw').forEach(x => x.classList.remove('on')); d.classList.add('on'); };
+                row.appendChild(d);
+            });
+        }
+        function setColor(c, fromSw) {
+            AC = c; document.getElementById('hex-lbl').textContent = c;
+            if (!fromSw) { document.getElementById('cp').value = c; document.getElementById('sw-row').querySelectorAll('.sw').forEach(x => x.classList.remove('on')); }
+            updatePartColors(); renderAll();
+        }
+        function updatePartColors() {
+            partIds.forEach(id => {
+                const b = document.getElementById(id); if (!b) return;
+                const num = b.querySelector('.part-num');
+                if (num) { num.style.background = hexRgba(AC, .12); num.style.color = AC; }
+                b.querySelectorAll('.part-sub span').forEach(s => s.style.color = AC);
+            });
+        }
+        function initPRE() {
+            document.querySelectorAll('#pre-row .bdg').forEach(b => {
+                b.onclick = () => {
+                    document.querySelectorAll('#pre-row .bdg').forEach(x => x.classList.remove('on')); b.classList.add('on');
+                    setColor(PRE[b.dataset.p], true); document.getElementById('sw-row').querySelectorAll('.sw').forEach(x => x.classList.remove('on'));
+                };
+            });
+        }
+        function getPreLabel() { const a = document.querySelector('#pre-row .bdg.on'); return a ? PRL[a.dataset.p] : 'Education'; }
+        function hexRgba(hex, a) { const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b2 = parseInt(hex.slice(5, 7), 16); return `rgba(${r},${g},${b2},${a})`; }
+
+        function addPart(title = '', subs = []) {
+            partCount++; const id = 'pt' + partCount; partIds.push(id);
+            const n = partIds.length;
+            const wrap = document.getElementById('parts-wrap');
+            const div = document.createElement('div'); div.className = 'part-block'; div.id = id;
+            div.innerHTML = `<div class="part-head"><div class="part-num" style="background:${hexRgba(AC, .12)};color:${AC}">${n}</div><input type="text" placeholder="파트 제목" value="${title}" oninput="renderAll()"><button class="rm" onclick="rmPart('${id}')">×</button></div><div class="subs-wrap" id="subs-${id}"></div><button class="add-sub" onclick="addSub('${id}')">+ 세부 항목</button>`;
+            wrap.appendChild(div);
+            subs.forEach(s => addSub(id, s));
+            if (!subs.length) addSub(id);
+            renderAll();
+        }
+        function rmPart(id) {
+            document.getElementById(id)?.remove(); partIds = partIds.filter(x => x !== id);
+            partIds.forEach((pid, i) => { const n = document.querySelector(`#${pid} .part-num`); if (n) n.textContent = i + 1; });
+            renderAll();
+        }
+        function addSub(partId, val = '') {
+            subCount++; const sid = 'sb' + subCount;
+            const wrap = document.getElementById('subs-' + partId); if (!wrap) return;
+            const row = document.createElement('div'); row.className = 'part-sub'; row.id = sid;
+            row.innerHTML = `<span style="color:${AC};font-size:12px;padding:4px 3px 4px 1px;flex-shrink:0">—</span><input type="text" placeholder="세부 항목" value="${val}" oninput="renderAll()"><button class="rm" onclick="document.getElementById('${sid}')?.remove();renderAll()">×</button>`;
+            wrap.appendChild(row); renderAll();
+        }
+        function getParts() {
+            return partIds.map((id, i) => {
+                const b = document.getElementById(id); if (!b) return null;
+                const ti = b.querySelector('.part-head input');
+                const si = b.querySelectorAll('.subs-wrap input');
+                return { n: i + 1, title: ti?.value || '', subs: [...si].map(x => x.value).filter(Boolean) };
+            }).filter(x => x && x.title);
+        }
+        function addEF(k = '', v = '') {
+            efCount++; const id = 'ef' + efCount; efIds.push(id);
+            const wrap = document.getElementById('ef-wrap');
+            const r = document.createElement('div'); r.className = 'ef-row'; r.id = id;
+            r.innerHTML = `<input type="text" placeholder="항목명" value="${k}" oninput="renderAll()"><input type="text" placeholder="내용" value="${v}" oninput="renderAll()"><button class="rm" onclick="document.getElementById('${id}')?.remove();efIds=efIds.filter(x=>x!=='${id}');renderAll()">×</button>`;
+            wrap.appendChild(r); renderAll();
+        }
+        function getEFs() { return efIds.map(id => { const r = document.getElementById(id); if (!r) return null; const ins = r.querySelectorAll('input'); return { k: ins[0]?.value || '', v: ins[1]?.value || '' }; }).filter(x => x && (x.k || x.v)); }
+        function fv(id) { return document.getElementById(id)?.value || ''; }
+        function getData() { return { title: fv('f-title') || 'Program Title', subtitle: fv('f-subtitle'), date: fv('f-date'), time: fv('f-time'), venue: fv('f-venue'), org: fv('f-org'), effect: fv('f-effect'), parts: getParts(), extras: getEFs() }; }
+
+        function swTab(t, btn) {
+            document.querySelectorAll('.tab').forEach(x => x.classList.remove('on')); btn.classList.add('on');
+            document.getElementById('vp').style.display = t === 'p' ? 'block' : 'none';
+            document.getElementById('vt').style.display = t === 't' ? 'block' : 'none';
+            const vb = document.getElementById('vb');
+            vb.style.display = t === 'b' ? 'flex' : 'none';
+            if (t === 'b') vb.style.flexDirection = 'column';
+        }
+
+        const BG = '#e9e7e1', INK = '#0f0f0f';
+        function fillBG(c, W, H) { c.fillStyle = BG; c.fillRect(0, 0, W, H); }
+        function hline(c, x, y, w, col, lw) { c.save(); c.strokeStyle = col || '#ccc'; c.lineWidth = lw || 1; c.beginPath(); c.moveTo(x, y); c.lineTo(x + w, y); c.stroke(); c.restore(); }
+        function vline(c, x, y, h, col, lw) { c.save(); c.strokeStyle = col || '#ccc'; c.lineWidth = lw || 1; c.beginPath(); c.moveTo(x, y); c.lineTo(x, y + h); c.stroke(); c.restore(); }
+        function wrapLines(c, txt, x, y, maxW, lh, maxL) {
+            maxL = maxL || 99;
+            const words = txt.split(' '); let line = '', ly = y, n = 0;
+            for (const w of words) {
+                if (n >= maxL) break;
+                const t = line ? line + ' ' + w : w;
+                if (c.measureText(t).width > maxW && line) { c.fillText(line, x, ly); line = w; ly += lh; n++; } else line = t;
+            }
+            if (line && n < maxL) c.fillText(line, x, ly);
+            return ly + lh;
+        }
+        function rrect(c, x, y, w, h, r) {
+            c.beginPath(); c.moveTo(x + r, y); c.lineTo(x + w - r, y); c.quadraticCurveTo(x + w, y, x + w, y + r);
+            c.lineTo(x + w, y + h - r); c.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+            c.lineTo(x + r, y + h); c.quadraticCurveTo(x, y + h, x, y + h - r);
+            c.lineTo(x, y + r); c.quadraticCurveTo(x, y, x + r, y); c.closePath();
+        }
+
+        function drawPoster(cv, d) {
+            const c = cv.getContext('2d'), W = cv.width, H = cv.height;
+            fillBG(c, W, H); const P = 64;
+            c.fillStyle = AC; c.fillRect(0, 0, W, 10);
+            c.fillStyle = INK; c.font = 'bold 28px Space Grotesk,sans-serif';
+            c.textAlign = 'left'; c.textBaseline = 'top';
+            c.fillText((d.org || 'Organization').toUpperCase(), P, 36);
+            c.fillStyle = AC; c.textAlign = 'right';
+            c.fillText(getPreLabel().toUpperCase(), W - P, 36);
+            hline(c, P, 88, W - P * 2, INK, 2);
+
+            const tsz = d.title.length > 12 ? 72 : 88;
+            c.fillStyle = INK; c.font = `bold ${tsz}px Space Grotesk,sans-serif`;
+            c.textAlign = 'left'; c.textBaseline = 'top';
+            let ty = 110, tl = '';
+            for (const w of d.title.split(' ')) {
+                const t = tl ? tl + ' ' + w : w;
+                if (c.measureText(t).width > W - P * 2 && tl) { c.fillText(tl, P, ty); tl = w; ty += tsz * 1.2; } else tl = t;
+            }
+            if (tl) { c.fillText(tl, P, ty); ty += tsz * 1.2; }
+            if (d.subtitle) { c.fillStyle = '#555'; c.font = '500 36px Space Grotesk,sans-serif'; wrapLines(c, d.subtitle, P, ty + 8, W - P * 2, 44, 2); ty += 60; }
+            hline(c, P, ty + 20, W - P * 2, '#bbb', 1);
+
+            const slabY = ty + 36, slabH = 140;
+            c.fillStyle = AC; c.fillRect(0, slabY, W, slabH);
+            const sm = slabY + slabH / 2;
+            c.fillStyle = '#fff'; c.font = 'bold 48px Space Grotesk,sans-serif';
+            c.textAlign = 'left'; c.textBaseline = 'middle';
+            if (d.date) c.fillText(d.date, P, sm - 22);
+            if (d.time) { c.fillStyle = 'rgba(255,255,255,.75)'; c.font = '500 30px Space Grotesk,sans-serif'; c.fillText(d.time, P, sm + 22); }
+            if (d.venue) { c.fillStyle = 'rgba(255,255,255,.9)'; c.font = '500 28px Space Grotesk,sans-serif'; c.textAlign = 'right'; const sv = d.venue.length > 18 ? d.venue.slice(0, 18) + '…' : d.venue; c.fillText(sv, W - P, sm); }
+
+            let curY = slabY + slabH + 52;
+            c.fillStyle = INK; c.font = 'bold 26px Space Grotesk,sans-serif'; c.textAlign = 'left'; c.textBaseline = 'top';
+            c.fillText('PROGRAM', P, curY); c.fillStyle = AC; c.fillRect(P, curY + 34, 48, 4); curY += 54;
+
+            const parts = d.parts || [];
+            parts.forEach(pt => {
+                c.fillStyle = hexRgba(AC, .13); rrect(c, P, curY, 44, 44, 8); c.fill();
+                c.fillStyle = AC; c.font = 'bold 22px Space Grotesk,sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+                c.fillText(pt.n, P + 22, curY + 22);
+                c.fillStyle = INK; c.font = 'bold 30px Space Grotesk,sans-serif'; c.textAlign = 'left'; c.textBaseline = 'top';
+                const ptW = W - P * 2 - 56; let ptly = curY + 4, ptline = '';
+                for (const w of pt.title.split(' ')) { const t = ptline ? ptline + ' ' + w : w; if (c.measureText(t).width > ptW && ptline) { c.fillText(ptline, P + 56, ptly); ptline = w; ptly += 36; } else ptline = t; }
+                if (ptline) c.fillText(ptline, P + 56, ptly);
+                curY = ptly + 42;
+                (pt.subs || []).forEach(sub => {
+                    if (!sub) return;
+                    c.fillStyle = AC; c.font = '500 26px Space Grotesk,sans-serif'; c.textAlign = 'left'; c.textBaseline = 'top'; c.fillText('—', P + 12, curY);
+                    c.fillStyle = '#333'; c.font = '26px Space Grotesk,sans-serif';
+                    curY = wrapLines(c, sub, P + 46, curY, W - P * 2 - 46, 32, 2) + 2;
+                });
+                curY += 16; hline(c, P, curY, W - P * 2, '#ddd', 1); curY += 22;
+            });
+
+            if (d.effect) {
+                c.fillStyle = INK; c.font = 'bold 26px Space Grotesk,sans-serif'; c.textAlign = 'left'; c.textBaseline = 'top';
+                c.fillText('기대 효과', P, curY); c.fillStyle = AC; c.fillRect(P, curY + 34, 48, 4); curY += 54;
+                c.fillStyle = '#222'; c.font = '26px Space Grotesk,sans-serif';
+                curY = wrapLines(c, d.effect, P, curY, W - P * 2, 34, 4) + 8;
+            }
+            const exts = d.extras || [];
+            if (exts.length) {
+                hline(c, P, curY + 8, W - P * 2, '#ccc', 1); curY += 30;
+                exts.slice(0, 6).forEach(({ k, v }) => {
+                    c.fillStyle = '#999'; c.font = 'bold 22px Space Grotesk,sans-serif'; c.textAlign = 'left'; c.textBaseline = 'top';
+                    c.fillText((k || '').toUpperCase(), P, curY);
+                    c.fillStyle = INK; c.font = '500 28px Space Grotesk,sans-serif';
+                    c.fillText(v.length > 20 ? v.slice(0, 20) + '…' : v, P + 200, curY + 2); curY += 42;
+                });
+            }
+            hline(c, P, H - 80, W - P * 2, INK, 2); c.fillStyle = AC; c.fillRect(P, H - 80, 56, 4);
+            c.fillStyle = INK; c.font = 'bold 26px Space Grotesk,sans-serif'; c.textAlign = 'left'; c.textBaseline = 'middle';
+            c.fillText((d.org || '').toUpperCase(), P, H - 44);
+            c.fillStyle = '#777'; c.font = '24px Space Grotesk,sans-serif'; c.textAlign = 'right'; c.fillText(getPreLabel(), W - P, H - 44);
+        }
+
+        function drawThumb(cv, d) {
+            const c = cv.getContext('2d'), W = cv.width, H = cv.height;
+            fillBG(c, W, H); const P = 44;
+            c.fillStyle = AC; c.fillRect(0, 0, 8, H);
+            c.fillStyle = INK; c.fillRect(8, 0, W - 8, 52);
+            c.fillStyle = 'rgba(255,255,255,.9)'; c.font = 'bold 14px Space Grotesk,sans-serif';
+            c.textAlign = 'left'; c.textBaseline = 'middle'; c.fillText((d.org || 'Organization').toUpperCase(), P, 26);
+            c.fillStyle = AC; c.font = 'bold 14px Space Grotesk,sans-serif'; c.textAlign = 'right'; c.fillText(getPreLabel().toUpperCase(), W - P, 26);
+
+            const tsz = d.title.length > 14 ? 34 : 44;
+            c.fillStyle = INK; c.font = `bold ${tsz}px Space Grotesk,sans-serif`;
+            c.textAlign = 'left'; c.textBaseline = 'top';
+            let ty = 68, tl = '';
+            for (const w of d.title.split(' ')) { const t = tl ? tl + ' ' + w : w; if (c.measureText(t).width > W * 0.54 && tl) { c.fillText(tl, P, ty); tl = w; ty += tsz * 1.18; } else tl = t; }
+            if (tl) { c.fillText(tl, P, ty); ty += tsz * 1.18; }
+            if (d.subtitle) { c.fillStyle = '#555'; c.font = '500 16px Space Grotesk,sans-serif'; c.fillText(d.subtitle.slice(0, 32), P, ty + 4); ty += 24; }
+            hline(c, P, ty + 8, W * 0.52, '#ccc', 1);
+            if (d.date) { c.fillStyle = INK; c.font = 'bold 20px Space Grotesk,sans-serif'; c.textAlign = 'left'; c.textBaseline = 'top'; c.fillText(d.date, P, ty + 16); }
+            if (d.time) { c.fillStyle = '#666'; c.font = '14px Space Grotesk,sans-serif'; c.fillText(d.time, P, ty + 42); }
+            if (d.venue) { c.fillStyle = '#888'; c.font = '12px Space Grotesk,sans-serif'; c.fillText(d.venue.length > 26 ? d.venue.slice(0, 26) + '…' : d.venue, P, ty + 60); }
+
+            const rx = W * 0.60; vline(c, rx, 58, H - 58 - 44, '#ccc', 1);
+            const rp = rx + 28, rw = W - rp - P;
+            c.fillStyle = INK; c.font = 'bold 11px Space Grotesk,sans-serif'; c.textAlign = 'left'; c.textBaseline = 'top';
+            c.fillText('PROGRAM', rp, 64); c.fillStyle = AC; c.fillRect(rp, 78, 18, 2);
+
+            const parts = d.parts || []; let py = 86;
+            parts.slice(0, 3).forEach(pt => {
+                c.fillStyle = hexRgba(AC, .15); rrect(c, rp, py, 16, 16, 3); c.fill();
+                c.fillStyle = AC; c.font = 'bold 9px Space Grotesk,sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(pt.n, rp + 8, py + 8);
+                c.fillStyle = INK; c.font = 'bold 13px Space Grotesk,sans-serif'; c.textAlign = 'left'; c.textBaseline = 'top';
+                c.fillText(pt.title.length > 18 ? pt.title.slice(0, 18) + '…' : pt.title, rp + 22, py + 1); py += 20;
+                (pt.subs || []).slice(0, 2).forEach(s => { if (!s) return; c.fillStyle = AC; c.font = '11px Space Grotesk,sans-serif'; c.fillText('—', rp + 4, py); c.fillStyle = '#444'; c.font = '11px Space Grotesk,sans-serif'; c.fillText(s.length > 20 ? s.slice(0, 20) + '…' : s, rp + 16, py); py += 15; });
+                py += 6;
+            });
+            if (d.effect) {
+                hline(c, rp, py + 2, rw, '#ccc', 1);
+                c.fillStyle = AC; c.font = 'bold 9px Space Grotesk,sans-serif'; c.textAlign = 'left'; c.textBaseline = 'top'; c.fillText('기대 효과', rp, py + 10);
+                c.fillStyle = '#333'; c.font = '11px Space Grotesk,sans-serif'; wrapLines(c, d.effect, rp, py + 24, rw, 15, 2);
+            }
+            c.fillStyle = AC; c.fillRect(8, H - 40, W - 8, 40);
+            c.fillStyle = '#fff'; c.font = 'bold 13px Space Grotesk,sans-serif'; c.textAlign = 'left'; c.textBaseline = 'middle'; c.fillText((d.org || '').toUpperCase(), P, H - 20);
+            if (d.date) { c.fillStyle = 'rgba(255,255,255,.7)'; c.font = '12px Space Grotesk,sans-serif'; c.textAlign = 'right'; c.fillText(d.date, W - P, H - 20); }
+        }
+
+        function renderAll() {
+            const d = getData();
+            ['cvP', 'cvP2'].forEach(id => { const cv = document.getElementById(id); if (cv) drawPoster(cv, d); });
+            ['cvT', 'cvT2'].forEach(id => { const cv = document.getElementById(id); if (cv) drawThumb(cv, d); });
+        }
+        function dlAll() {
+            renderAll();
+            const safe = (fv('f-title') || 'poster').replace(/[^a-zA-Z0-9가-힣]/g, '_').slice(0, 24);
+            setTimeout(() => { const a = document.createElement('a'); a.download = safe + '_poster_1080x1920.png'; a.href = document.getElementById('cvP').toDataURL('image/png', 0.92); a.click(); }, 100);
+            setTimeout(() => { const a = document.createElement('a'); a.download = safe + '_thumb_960x540.png'; a.href = document.getElementById('cvT').toDataURL('image/png', 0.92); a.click(); }, 700);
+        }
+
+        initSW(); initPRE();
+        addPart('쌍방향 소통 기술', ['업무효율 극대화를 위한 소통의 중요성', '팀내 소통문제 해결 기법']);
+        addPart('성과창출 리더십', ['리더십 발휘와 업무성과 연관성', '리더십을 통한 조직 및 업무 역량 강화']);
+        addPart('공정 객관적 성과평가', ['성과 평가와 성과창출 연관성', '공정객관적 성과평가 방법']);
+        addEF('강사', '홍길동 교수');
+        addEF('정원', '50명');
+        ['f-title', 'f-subtitle', 'f-date', 'f-time', 'f-venue', 'f-org', 'f-effect'].forEach(id => {
+            document.getElementById(id)?.addEventListener('input', renderAll);
+        });
+        renderAll();
+    </script>
+</body>
+
+</html>
