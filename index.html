@@ -5,11 +5,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>교육 포스터 & 썸네일 생성기</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
     <link
-        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;500&display=swap"
         rel="stylesheet">
     <style>
+        :root {
+            --bg: #0f1115;
+            --sidebar-bg: #1a1d23;
+            --card-bg: #242931;
+            --border: #313844;
+            --text-pri: #ffffff;
+            --text-sec: #94a3b8;
+            --accent: #3b82f6;
+            --accent-soft: rgba(59, 130, 246, 0.1);
+            --radius-lg: 12px;
+            --radius-md: 8px;
+            --radius-sm: 4px;
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
@@ -17,40 +30,64 @@
         }
 
         body {
-            font-family: 'Space Grotesk', sans-serif;
-            background: #f0ede8;
-            color: #111
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: var(--text-pri);
+            line-height: 1.5;
         }
 
         .root {
             display: grid;
-            grid-template-columns: 300px 1fr;
+            grid-template-columns: 320px 1fr;
             height: 100vh;
             overflow: hidden
         }
 
         .sidebar {
-            background: #f7f5f0;
-            border-right: 1px solid #ddd;
-            padding: 1rem;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
+            padding: 1.5rem;
             overflow-y: auto;
-            height: 100vh
+            position: relative;
+            z-index: 10;
         }
 
         .main {
-            padding: 1rem;
+            padding: 2rem;
             overflow-y: auto;
-            height: 100vh;
-            background: #e8e5e0
+            background: radial-gradient(circle at center, #1e293b 0%, #0f1115 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: var(--text-pri);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h1::before {
+            content: '';
+            width: 12px;
+            height: 12px;
+            background: var(--accent);
+            border-radius: 3px;
+            box-shadow: 0 0 15px var(--accent);
         }
 
         .sec {
-            font-size: 10px;
-            font-weight: 500;
-            letter-spacing: .1em;
-            color: #999;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            color: var(--text-sec);
             text-transform: uppercase;
-            margin: 14px 0 6px;
+            margin: 24px 0 12px;
             display: flex;
             align-items: center;
             gap: 8px
@@ -59,343 +96,330 @@
         .sec::after {
             content: '';
             flex: 1;
-            height: .5px;
-            background: #ddd
+            height: 1px;
+            background: var(--border)
         }
 
         label {
-            font-size: 11px;
-            color: #666;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-sec);
             display: block;
-            margin: 7px 0 2px
+            margin: 12px 0 6px
         }
 
         input[type=text],
         textarea {
             width: 100%;
-            padding: 6px 9px;
-            font-size: 12px;
-            font-family: 'Space Grotesk', sans-serif;
-            background: #fff;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            color: #111;
-            outline: none
+            padding: 10px 12px;
+            font-size: 13px;
+            font-family: inherit;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            color: var(--text-pri);
+            outline: none;
+            transition: all 0.2s;
         }
 
         input[type=text]:focus,
         textarea:focus {
-            border-color: #aaa
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-soft);
         }
 
         textarea {
             resize: vertical;
-            line-height: 1.5;
-            min-height: 52px
+            min-height: 60px
         }
 
         .part-block {
-            background: #fff;
-            border: 1px solid #e0ddd8;
-            border-radius: 7px;
-            padding: 9px;
-            margin-bottom: 6px
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 12px;
+            margin-bottom: 12px
         }
 
         .part-head {
             display: flex;
             align-items: center;
-            gap: 6px;
-            margin-bottom: 7px
+            gap: 8px;
+            margin-bottom: 10px
         }
 
         .part-num {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 10px;
+            font-size: 11px;
             font-weight: 700;
+            background: var(--accent-soft);
+            color: var(--accent);
             flex-shrink: 0
         }
 
         .part-head input {
             flex: 1;
-            font-weight: 500;
-            font-size: 12px
+            font-weight: 600;
+            padding: 6px 10px;
         }
 
         .part-sub {
             display: flex;
-            gap: 4px;
-            margin-bottom: 4px;
+            gap: 6px;
+            margin-bottom: 6px;
             align-items: center
         }
 
         .part-sub input {
             flex: 1;
-            font-size: 11px;
-            padding: 4px 7px
+            font-size: 12px;
+            padding: 6px 10px;
+            background: transparent;
         }
 
         .rm {
-            background: none;
+            background: transparent;
             border: none;
-            color: #bbb;
+            color: #ef4444;
+            opacity: 0.5;
             cursor: pointer;
-            font-size: 14px;
-            line-height: 1;
-            padding: 3px
+            font-size: 18px;
+            padding: 4px;
+            transition: opacity 0.2s;
         }
 
         .rm:hover {
-            color: #333
+            opacity: 1;
         }
 
-        .add-sub {
-            font-size: 10px;
-            padding: 3px 8px;
-            border-radius: 20px;
-            border: 1px dashed #ccc;
+        .add-sub,
+        .add-part,
+        .add-ef {
+            font-size: 12px;
+            font-weight: 500;
+            padding: 8px;
+            border-radius: var(--radius-md);
+            border: 1px dashed var(--border);
             background: transparent;
-            color: #999;
+            color: var(--text-sec);
             cursor: pointer;
-            font-family: 'Space Grotesk', sans-serif;
-            width: 100%
-        }
-
-        .add-sub:hover {
-            color: #333
-        }
-
-        .add-part {
+            transition: all 0.2s;
             width: 100%;
-            padding: 6px;
-            font-size: 11px;
-            border-radius: 6px;
-            border: 1px dashed #ccc;
-            background: transparent;
-            color: #999;
-            cursor: pointer;
-            font-family: 'Space Grotesk', sans-serif;
-            margin-top: 3px
+            margin-top: 5px;
         }
 
-        .add-part:hover {
-            color: #333
+        .add-sub:hover,
+        .add-part:hover,
+        .add-ef:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: var(--accent-soft);
         }
 
         .sw-row {
             display: flex;
-            gap: 5px;
+            gap: 8px;
             flex-wrap: wrap;
-            margin-top: 3px
+            margin: 10px 0;
         }
 
         .sw {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
             cursor: pointer;
             border: 2px solid transparent;
-            flex-shrink: 0;
-            transition: transform .1s
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .sw.on {
-            border-color: #111;
-            transform: scale(1.15)
+            border-color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
 
         .cust-row {
             display: flex;
             align-items: center;
-            gap: 6px;
-            margin-top: 6px
+            gap: 10px;
+            background: var(--card-bg);
+            padding: 10px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
         }
 
         input[type=color] {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            border: 1px solid #ddd;
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+            border: none;
             cursor: pointer;
-            padding: 0;
-            background: none
+            background: none;
         }
 
         .hex {
-            font-size: 11px;
-            font-family: 'DM Mono', monospace;
-            color: #999
+            font-size: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent);
+            font-weight: 600;
         }
 
         .bdgs {
-            display: flex;
-            gap: 4px;
-            flex-wrap: wrap;
-            margin-top: 3px
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
         }
 
         .bdg {
-            padding: 3px 9px;
-            font-size: 10px;
-            border-radius: 20px;
+            padding: 10px;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: var(--radius-md);
             cursor: pointer;
-            border: 1px solid #ddd;
-            background: transparent;
-            color: #888;
-            font-family: 'Space Grotesk', sans-serif;
-            transition: all .12s
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            color: var(--text-sec);
+            transition: all 0.2s;
         }
 
         .bdg.on {
-            background: #111;
+            background: var(--accent);
             color: #fff;
-            border-color: #111
+            border-color: var(--accent);
+            box-shadow: 0 4px 10px var(--accent-soft);
         }
 
         .ef-row {
-            display: grid;
-            grid-template-columns: 72px 1fr 18px;
-            gap: 4px;
-            align-items: start;
-            margin-bottom: 5px
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 10px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            margin-bottom: 8px;
+            position: relative;
         }
 
-        .ef-row input {
-            margin: 0
-        }
-
-        .add-ef {
-            width: 100%;
-            margin-top: 2px;
-            padding: 5px;
-            font-size: 11px;
-            border-radius: 5px;
-            border: 1px dashed #ccc;
-            background: transparent;
-            color: #999;
-            cursor: pointer;
-            font-family: 'Space Grotesk', sans-serif
-        }
-
-        .add-ef:hover {
-            color: #333
+        .ef-row .rm {
+            position: absolute;
+            top: 5px;
+            right: 5px;
         }
 
         .tabs {
             display: flex;
-            gap: 4px;
-            margin-bottom: 10px
+            background: var(--card-bg);
+            padding: 5px;
+            border-radius: 30px;
+            gap: 5px;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
         }
 
         .tab {
-            padding: 5px 13px;
-            font-size: 11px;
-            border-radius: 20px;
+            padding: 8px 20px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 25px;
             cursor: pointer;
-            border: 1px solid #ccc;
-            background: #fff;
-            color: #888;
-            font-family: 'Space Grotesk', sans-serif;
-            transition: all .12s
-        }
-
-        .tab:hover {
-            border-color: #888;
-            color: #333
+            border: none;
+            background: transparent;
+            color: var(--text-sec);
+            transition: all 0.2s;
         }
 
         .tab.on {
-            background: #111;
+            background: var(--accent);
             color: #fff;
-            border-color: #111
         }
 
         .size-badge {
-            font-size: 10px;
-            font-family: 'DM Mono', monospace;
-            color: #999;
-            margin-bottom: 6px
+            font-size: 11px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-sec);
+            margin-bottom: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 4px 12px;
+            border-radius: 20px;
+            display: inline-block;
         }
 
         .cv-wrap {
-            display: flex;
-            justify-content: center
+            position: relative;
+            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.5), 0 18px 36px -18px rgba(0, 0, 0, 0.5);
+            line-height: 0;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        canvas {
+            background: #fff;
         }
 
         .cv-wrap.portrait canvas {
-            max-height: 85vh;
+            max-height: 80vh;
             width: auto;
-            display: block;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, .1)
         }
 
         .cv-wrap.landscape canvas {
-            max-width: 100%;
+            max-width: 900px;
             height: auto;
-            display: block;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, .1)
         }
 
         .btns {
+            position: sticky;
+            bottom: 0;
+            left: 0;
+            width: 100%;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 7px;
-            margin-top: 12px
+            gap: 10px;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            background: linear-gradient(to top, var(--sidebar-bg) 80%, transparent);
+            z-index: 20;
         }
 
         button.act {
-            display: block;
-            width: 100%;
-            padding: 9px;
-            font-size: 12px;
-            font-family: 'Space Grotesk', sans-serif;
-            border-radius: 6px;
+            padding: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            border-radius: var(--radius-md);
             cursor: pointer;
-            font-weight: 500;
-            border: 1px solid #ddd;
-            background: #fff;
-            color: #111;
-            transition: all .12s
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            color: var(--text-pri);
+            transition: all 0.2s;
         }
 
         button.act:hover {
-            background: #f0ede8;
-            border-color: #aaa
+            background: #2d343e;
+            border-color: #4b5563;
         }
 
         button.act.pri {
-            background: #111;
+            background: var(--accent);
             color: #fff;
-            border-color: #111
+            border-color: var(--accent);
         }
 
         button.act.pri:hover {
-            background: #333
+            filter: brightness(1.1);
+            transform: translateY(-1px);
         }
 
         .gapcol {
             display: flex;
             flex-direction: column;
-            gap: 14px
-        }
-
-        h1 {
-            font-size: 13px;
-            font-weight: 700;
-            letter-spacing: .05em;
-            color: #333;
-            margin-bottom: 12px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #e0ddd8
+            gap: 2rem;
         }
     </style>
 </head>
@@ -488,10 +512,10 @@
     </div>
 
     <script>
-        const SW = ['#e84818', '#111111', '#0047AB', '#2D6A4F', '#9B2335', '#E08C00', '#6A0DAD', '#1a6b6b'];
-        const PRE = { general: '#e84818', workshop: '#0047AB', seminar: '#2D6A4F', symposium: '#9B2335', conference: '#6A0DAD' };
+        const SW = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#6366f1', '#14b8a6'];
+        const PRE = { general: '#3b82f6', workshop: '#10b981', seminar: '#f59e0b', symposium: '#ef4444', conference: '#8b5cf6' };
         const PRL = { general: 'General Lecture', workshop: 'Workshop', seminar: 'Seminar', symposium: 'Symposium', conference: 'Conference' };
-        let AC = '#e84818', partIds = [], efIds = [], partCount = 0, efCount = 0, subCount = 0;
+        let AC = '#3b82f6', partIds = [], efIds = [], partCount = 0, efCount = 0, subCount = 0;
 
         function initSW() {
             const row = document.getElementById('sw-row');
@@ -577,8 +601,19 @@
             if (t === 'b') vb.style.flexDirection = 'column';
         }
 
-        const BG = '#e9e7e1', INK = '#0f0f0f';
-        function fillBG(c, W, H) { c.fillStyle = BG; c.fillRect(0, 0, W, H); }
+        const BG = '#ffffff', INK = '#111827';
+        function fillBG(c, W, H) {
+            c.fillStyle = BG;
+            c.fillRect(0, 0, W, H);
+            // Subtle noise/texture
+            c.save();
+            c.globalAlpha = 0.02;
+            for (let i = 0; i < 1000; i++) {
+                c.fillStyle = Math.random() > 0.5 ? '#000' : '#fff';
+                c.fillRect(Math.random() * W, Math.random() * H, 2, 2);
+            }
+            c.restore();
+        }
         function hline(c, x, y, w, col, lw) { c.save(); c.strokeStyle = col || '#ccc'; c.lineWidth = lw || 1; c.beginPath(); c.moveTo(x, y); c.lineTo(x + w, y); c.stroke(); c.restore(); }
         function vline(c, x, y, h, col, lw) { c.save(); c.strokeStyle = col || '#ccc'; c.lineWidth = lw || 1; c.beginPath(); c.moveTo(x, y); c.lineTo(x, y + h); c.stroke(); c.restore(); }
         function wrapLines(c, txt, x, y, maxW, lh, maxL) {
@@ -612,165 +647,259 @@
 
         function drawPoster(cv, d) {
             const c = cv.getContext('2d'), W = cv.width, H = cv.height;
-            fillBG(c, W, H); const P = 64;
-            c.fillStyle = AC; c.fillRect(0, 0, W, 10);
-            c.fillStyle = INK; c.font = 'bold 28px Space Grotesk,sans-serif';
+            fillBG(c, W, H);
+            const P = 72;
+
+            // 0. Abstract background element
+            c.save();
+            c.translate(W, 0);
+            c.rotate(Math.PI / 4);
+            c.fillStyle = hexRgba(AC, 0.03);
+            c.fillRect(-W, 0, W * 2, H / 3);
+            c.restore();
+
+            // 1. Top Header
+            c.fillStyle = INK; c.font = '800 24px Outfit,sans-serif';
             c.textAlign = 'left'; c.textBaseline = 'top';
-            c.fillText((d.org || 'Organization').toUpperCase(), P, 36);
+            c.fillText((d.org || 'ORGANIZATION').toUpperCase(), P, 50);
+
             c.fillStyle = AC; c.textAlign = 'right';
-            c.fillText(getPreLabel().toUpperCase(), W - P, 36);
-            hline(c, P, 88, W - P * 2, INK, 2);
+            c.font = 'bold 22px Outfit,sans-serif';
+            c.fillText(getPreLabel().toUpperCase(), W - P, 51);
 
-            const tsz = d.title.length > 12 ? 72 : 88;
-            c.fillStyle = INK; c.font = `bold ${tsz}px Space Grotesk,sans-serif`;
+            hline(c, P, 100, W - P * 2, hexRgba(INK, 0.1), 1);
+
+            // 2. Title
+            const tsz = d.title.length > 15 ? 82 : 100;
+            c.fillStyle = INK; c.font = `800 ${tsz}px Outfit,sans-serif`;
             c.textAlign = 'left'; c.textBaseline = 'top';
-            let ty = 110, tl = '';
-            for (const w of d.title.split(' ')) {
+            let ty = 140, tl = '';
+            const words = d.title.split(' ');
+            for (const w of words) {
                 const t = tl ? tl + ' ' + w : w;
-                if (c.measureText(t).width > W - P * 2 && tl) { c.fillText(tl, P, ty); tl = w; ty += tsz * 1.2; } else tl = t;
+                if (c.measureText(t).width > W - P * 2 && tl) {
+                    c.fillText(tl, P, ty);
+                    tl = w; ty += tsz * 1.05;
+                } else tl = t;
             }
-            if (tl) { c.fillText(tl, P, ty); ty += tsz * 1.2; }
-            if (d.subtitle) { c.fillStyle = '#555'; c.font = '500 36px Space Grotesk,sans-serif'; wrapLines(c, d.subtitle, P, ty + 8, W - P * 2, 44, 2); ty += 60; }
-            hline(c, P, ty + 20, W - P * 2, '#bbb', 1);
+            if (tl) { c.fillText(tl, P, ty); ty += tsz * 1.05; }
 
-            const slabY = ty + 36, slabH = 140;
-            c.fillStyle = AC; c.fillRect(0, slabY, W, slabH);
-            const sm = slabY + slabH / 2;
-            c.fillStyle = '#fff'; c.font = 'bold 48px Space Grotesk,sans-serif';
-            c.textAlign = 'left'; c.textBaseline = 'middle';
-            if (d.date) c.fillText(d.date, P, sm - 22);
-            if (d.time) { c.fillStyle = 'rgba(255,255,255,.75)'; c.font = '500 30px Space Grotesk,sans-serif'; c.fillText(d.time, P, sm + 22); }
-            if (d.venue) { c.fillStyle = 'rgba(255,255,255,.9)'; c.font = '500 28px Space Grotesk,sans-serif'; c.textAlign = 'right'; const sv = d.venue.length > 18 ? d.venue.slice(0, 18) + '…' : d.venue; c.fillText(sv, W - P, sm); }
+            // 3. Subtitle
+            if (d.subtitle) {
+                c.fillStyle = '#64748b';
+                c.font = '400 38px Outfit,sans-serif';
+                ty = wrapLines(c, d.subtitle, P, ty + 10, W - P * 2, 48, 2) + 20;
+            }
 
-            let curY = slabY + slabH + 52;
-            c.fillStyle = INK; c.font = 'bold 32px Space Grotesk,sans-serif'; c.textAlign = 'left'; c.textBaseline = 'top';
-            c.fillText('PROGRAM', P, curY); c.fillStyle = AC; c.fillRect(P, curY + 42, 56, 4); curY += 64;
+            // 4. Time/Date Box (Floating Style)
+            ty += 20;
+            const boxH = 180;
+            c.save();
+            c.shadowColor = 'rgba(0,0,0,0.05)';
+            c.shadowBlur = 40;
+            c.shadowOffsetY = 20;
+            c.fillStyle = '#fff';
+            rrect(c, P - 10, ty, W - P * 2 + 20, boxH, 24);
+            c.fill();
+            c.restore();
 
+            // Internal Accent
+            c.fillStyle = AC;
+            rrect(c, P + 10, ty + 30, 8, boxH - 60, 4);
+            c.fill();
+
+            c.textAlign = 'left';
+            c.textBaseline = 'top';
+            c.fillStyle = INK;
+            c.font = '800 52px Outfit,sans-serif';
+            if (d.date) c.fillText(d.date, P + 40, ty + 35);
+
+            c.font = '500 32px Outfit,sans-serif';
+            c.fillStyle = '#64748b';
+            if (d.time) c.fillText(d.time, P + 40, ty + 105);
+
+            // Venue Badge
+            if (d.venue) {
+                const vw = c.measureText(d.venue).width + 40;
+                c.fillStyle = hexRgba(AC, 0.1);
+                rrect(c, W - P - vw, ty + 65, vw, 50, 25);
+                c.fill();
+                c.fillStyle = AC;
+                c.font = '700 24px Outfit,sans-serif';
+                c.textAlign = 'center';
+                c.fillText(d.venue, W - P - vw / 2, ty + 77);
+            }
+
+            let curY = ty + boxH + 60;
+
+            // 5. Program Header
+            c.fillStyle = INK; c.font = '800 36px Outfit,sans-serif'; c.textAlign = 'left';
+            c.fillText('CURRICULUM', P, curY);
+            c.fillStyle = AC; c.fillRect(P, curY + 48, 80, 6);
+            curY += 90;
+
+            // 6. Program Parts
             const parts = d.parts || [];
-            parts.forEach(pt => {
-                c.fillStyle = hexRgba(AC, .13); rrect(c, P, curY, 48, 48, 8); c.fill();
-                c.fillStyle = AC; c.font = 'bold 24px Space Grotesk,sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
-                c.fillText(pt.n, P + 24, curY + 24);
-                c.fillStyle = INK; c.font = 'bold 38px Space Grotesk,sans-serif'; c.textAlign = 'left'; c.textBaseline = 'top';
-                const ptW = W - P * 2 - 64; let ptly = curY + 4, ptline = '';
-                for (const w of pt.title.split(' ')) { const t = ptline ? ptline + ' ' + w : w; if (c.measureText(t).width > ptW && ptline) { c.fillText(ptline, P + 64, ptly); ptline = w; ptly += 44; } else ptline = t; }
-                if (ptline) c.fillText(ptline, P + 64, ptly);
-                curY = ptly + 52;
+            parts.forEach((pt, idx) => {
+                if (curY > H - 250) return;
+
+                c.fillStyle = AC;
+                c.font = '800 26px JetBrains Mono,sans-serif';
+                c.fillText(String(pt.n).padStart(2, '0'), P, curY + 5);
+
+                c.fillStyle = INK; c.font = '700 40px Outfit,sans-serif';
+                const ptW = W - P * 2 - 80;
+                let ptly = curY, ptline = '';
+                const ptwds = pt.title.split(' ');
+                for (const w of ptwds) {
+                    const t = ptline ? ptline + ' ' + w : w;
+                    if (c.measureText(t).width > ptW && ptline) {
+                        c.fillText(ptline, P + 80, ptly);
+                        ptline = w; ptly += 48;
+                    } else ptline = t;
+                }
+                if (ptline) {
+                    c.fillText(ptline, P + 80, ptly);
+                    ptly += 50;
+                }
+
+                curY = ptly;
                 (pt.subs || []).forEach(sub => {
-                    if (!sub) return;
-                    c.fillStyle = AC; c.font = '500 32px Space Grotesk,sans-serif'; c.textAlign = 'left'; c.textBaseline = 'top'; c.fillText('—', P + 12, curY);
-                    c.fillStyle = '#333'; c.font = '32px Space Grotesk,sans-serif';
-                    curY = wrapLines(c, sub, P + 54, curY, W - P * 2 - 54, 40, 2) + 2;
+                    if (curY > H - 200) return;
+                    c.fillStyle = '#64748b'; c.font = '400 30px Outfit,sans-serif';
+                    curY = wrapLines(c, "• " + sub, P + 80, curY, ptW, 40, 1) + 5;
                 });
-                curY += 16; hline(c, P, curY, W - P * 2, '#ddd', 1); curY += 26;
+                curY += 30;
+                hline(c, P + 80, curY - 10, ptW, hexRgba(INK, 0.05), 1);
             });
 
-            if (d.effect) {
-                c.fillStyle = INK; c.font = 'bold 32px Space Grotesk,sans-serif'; c.textAlign = 'left'; c.textBaseline = 'top';
-                c.fillText('기대 효과', P, curY); c.fillStyle = AC; c.fillRect(P, curY + 42, 56, 4); curY += 64;
-                c.fillStyle = '#222'; c.font = '32px Space Grotesk,sans-serif';
-                curY = wrapLines(c, d.effect, P, curY, W - P * 2, 42, 4) + 12;
+            // 7. Benefits / Effect
+            if (d.effect && curY < H - 200) {
+                curY += 20;
+                c.fillStyle = INK; c.font = '800 32px Outfit,sans-serif';
+                c.fillText('OUTCOMES', P, curY);
+                c.fillStyle = AC; c.fillRect(P, curY + 42, 60, 4);
+                curY += 70;
+                c.fillStyle = '#475569'; c.font = '400 32px Outfit,sans-serif';
+                curY = wrapLines(c, d.effect, P, curY, W - P * 2, 44, 3) + 20;
             }
-            const exts = d.extras || [];
-            if (exts.length) {
-                hline(c, P, curY + 8, W - P * 2, '#ccc', 1); curY += 48;
-                exts.forEach(({ k, v }) => {
-                    const ltxt = k.toUpperCase();
-                    c.font = 'bold 24px Space Grotesk,sans-serif';
-                    const lw = c.measureText(ltxt).width + 52;
-                    c.fillStyle = INK; rrect(c, P, curY, lw, 52, 26); c.fill();
-                    c.fillStyle = '#fff'; c.textAlign = 'center'; c.textBaseline = 'middle';
-                    c.fillText(ltxt, P + lw / 2, curY + 26);
 
-                    c.fillStyle = INK; c.font = '500 32px Space Grotesk,sans-serif';
-                    c.textAlign = 'left'; c.textBaseline = 'top';
-                    const vx = P + lw + 24, vw = W - vx - P;
-                    const ny = wrapLines(c, v, vx, curY + 4, vw, 42, 8);
-                    curY = Math.max(ny + 24, curY + 74);
+            // 8. Extra Info
+            const exts = d.extras || [];
+            if (exts.length && curY < H - 200) {
+                curY += 40;
+                c.fillStyle = INK; c.font = '800 32px Outfit,sans-serif';
+                c.fillText('DETAILS', P, curY);
+                c.fillStyle = AC; c.fillRect(P, curY + 42, 60, 4);
+                curY += 80;
+
+                exts.forEach(({ k, v }) => {
+                    if (curY > H - 150) return;
+                    c.fillStyle = INK; c.font = '800 20px JetBrains Mono,sans-serif';
+                    c.textAlign = 'left';
+                    const kw = c.measureText(k.toUpperCase()).width;
+
+                    c.fillStyle = hexRgba(AC, 0.1);
+                    rrect(c, P, curY - 5, kw + 20, 34, 6);
+                    c.fill();
+
+                    c.fillStyle = AC;
+                    c.textBaseline = 'top';
+                    c.fillText(k.toUpperCase(), P + 10, curY);
+
+                    c.fillStyle = '#475569'; c.font = '500 26px Outfit,sans-serif';
+                    wrapLines(c, v, P + kw + 40, curY - 2, W - P * 2 - kw - 40, 34, 1);
+                    curY += 50;
                 });
             }
-            hline(c, P, H - 80, W - P * 2, INK, 2); c.fillStyle = AC; c.fillRect(P, H - 80, 56, 4);
-            c.fillStyle = INK; c.font = 'bold 26px Space Grotesk,sans-serif'; c.textAlign = 'left'; c.textBaseline = 'middle';
-            c.fillText((d.org || '').toUpperCase(), P, H - 44);
-            c.fillStyle = '#777'; c.font = '24px Space Grotesk,sans-serif'; c.textAlign = 'right'; c.fillText(getPreLabel(), W - P, H - 44);
+
+            // 9. Bottom Footer
+            c.fillStyle = INK;
+            c.fillRect(0, H - 120, W, 120);
+
+            c.fillStyle = '#fff';
+            c.font = '800 32px Outfit,sans-serif';
+            c.textAlign = 'left';
+            c.textBaseline = 'middle';
+            c.fillText((d.org || '').toUpperCase(), P, H - 60);
+
+            c.fillStyle = hexRgba('#fff', 0.5);
+            c.font = '400 24px Outfit,sans-serif';
+            c.textAlign = 'right';
+            c.fillText('Registration Open Now', W - P, H - 60);
         }
 
         function drawThumb(cv, d) {
             const c = cv.getContext('2d'), W = cv.width, H = cv.height;
             fillBG(c, W, H);
-            const P = 70; // Padding
+            const P = 72;
 
-            // 1. Accent Bar (Left side)
-            c.fillStyle = AC;
-            c.fillRect(0, 0, 16, H);
+            // Gradient Accent
+            const grad = c.createLinearGradient(0, 0, W, 0);
+            grad.addColorStop(0, AC);
+            grad.addColorStop(0.05, AC);
+            grad.addColorStop(0.05, 'transparent');
+            c.fillStyle = grad;
+            c.fillRect(0, 0, W, H);
 
-            // 2. Organization & Category Header
-            c.fillStyle = '#777';
-            c.font = 'bold 20px Space Grotesk,sans-serif';
+            // Organization
+            c.fillStyle = '#64748b';
+            c.font = '800 20px Outfit,sans-serif';
             c.textAlign = 'left';
             c.textBaseline = 'top';
-            c.fillText((d.org || 'Organization').toUpperCase(), P, 48);
+            c.fillText((d.org || 'Organization').toUpperCase(), P, 50);
 
+            // Category
             c.fillStyle = AC;
             c.textAlign = 'right';
-            c.font = 'bold 18px Space Grotesk,sans-serif';
-            c.fillText(getPreLabel().toUpperCase(), W - 50, 48);
+            c.font = 'bold 18px JetBrains Mono,sans-serif';
+            c.fillText(getPreLabel().toUpperCase(), W - 50, 50);
 
-            // 3. Main Title
-            const tsz = d.title.length > 12 ? 58 : 72;
+            // Main Title
+            const tsz = d.title.length > 15 ? 54 : 68;
             c.fillStyle = INK;
-            c.font = `bold ${tsz}px Space Grotesk,sans-serif`;
+            c.font = `800 ${tsz}px Outfit,sans-serif`;
             c.textAlign = 'left';
-            c.textBaseline = 'top';
             let ty = 100;
             let tl = '';
             for (const w of d.title.split(' ')) {
                 const t = tl ? tl + ' ' + w : w;
-                if (c.measureText(t).width > W - P - 50 && tl) {
+                if (c.measureText(t).width > W - P - 100 && tl) {
                     c.fillText(tl, P, ty);
-                    tl = w;
-                    ty += tsz * 1.1;
+                    tl = w; ty += tsz * 1.05;
                 } else tl = t;
             }
-            if (tl) {
-                c.fillText(tl, P, ty);
-                ty += tsz * 1.15;
-            }
+            if (tl) { c.fillText(tl, P, ty); ty += tsz * 1.05; }
 
-            // 4. Subtitle
+            // Subtitle
             if (d.subtitle) {
-                c.fillStyle = '#555';
-                c.font = '500 28px Space Grotesk,sans-serif';
-                ty = wrapLines(c, d.subtitle, P, ty, W - P - 50, 38, 2) + 20;
+                c.fillStyle = '#64748b';
+                c.font = '400 28px Outfit,sans-serif';
+                ty = wrapLines(c, d.subtitle, P, ty + 10, W - P - 100, 38, 2) + 30;
             }
 
-            // 5. Divider
-            hline(c, P, ty, 80, AC, 4);
-            ty += 40;
+            // Info Section
+            curY = H - 150;
+            hline(c, P, curY - 20, 100, AC, 6);
 
-            // 6. Info Group (Date, Time, Venue)
-            const infoLabelW = 90;
-            const drawInfoLine = (label, val, y) => {
-                if (!val) return y;
-                c.fillStyle = '#888';
-                c.font = 'bold 18px Space Grotesk,sans-serif';
-                c.textAlign = 'left';
-                c.fillText(label, P, y + 4);
+            c.fillStyle = INK;
+            c.font = '800 32px Outfit,sans-serif';
+            if (d.date) c.fillText(d.date, P, curY);
 
-                c.fillStyle = INK;
-                c.font = '500 22px Space Grotesk,sans-serif';
-                c.fillText(val, P + infoLabelW, y);
-                return y + 40;
-            };
+            c.font = '500 22px Outfit,sans-serif';
+            c.fillStyle = '#64748b';
+            if (d.time) c.fillText(d.time + "  |  " + (d.venue || ''), P, curY + 45);
 
-            ty = drawInfoLine('DATE', d.date, ty);
-            ty = drawInfoLine('TIME', d.time, ty);
-            ty = drawInfoLine('VENUE', d.venue, ty);
-
-            // 7. Decorative Element
-            c.strokeStyle = hexRgba(AC, 0.2);
-            c.lineWidth = 1;
-            c.strokeRect(W - 120, H - 120, 80, 80);
+            // Decorative Circle
+            c.save();
+            c.beginPath();
+            c.arc(W - 80, H / 2, 150, 0, Math.PI * 2);
+            c.fillStyle = hexRgba(AC, 0.05);
+            c.fill();
+            c.strokeStyle = hexRgba(AC, 0.1);
+            c.lineWidth = 2;
+            c.stroke();
+            c.restore();
         }
 
         function renderAll() {
@@ -789,8 +918,12 @@
         addPart('쌍방향 소통 기술', ['업무효율 극대화를 위한 소통의 중요성', '팀내 소통문제 해결 기법']);
         addPart('성과창출 리더십', ['리더십 발휘와 업무성과 연관성', '리더십을 통한 조직 및 업무 역량 강화']);
         addPart('공정 객관적 성과평가', ['성과 평가와 성과창출 연관성', '공정객관적 성과평가 방법']);
-        addEF('강사', '홍길동 교수');
-        addEF('정원', '50명');
+        addEF('강사', '김태식 교수(소부장기술융합포럼 교육전문위원)');
+        addEF('정원', '20명');
+        addEF('교육비', '1인당 20만원(중식미포함)');
+        addEF('입금계좌', '하나은행 404-910018-29204 소부장기술융합연구조합');
+        addEF('신청방법', '교육신청페이지에서 신청');
+        addEF('문의', '사무국(sobujang@starc.co.kr)');
         ['f-title', 'f-subtitle', 'f-date', 'f-time', 'f-venue', 'f-org', 'f-effect'].forEach(id => {
             document.getElementById(id)?.addEventListener('input', renderAll);
         });
