@@ -561,10 +561,10 @@
             efCount++; const id = 'ef' + efCount; efIds.push(id);
             const wrap = document.getElementById('ef-wrap');
             const r = document.createElement('div'); r.className = 'ef-row'; r.id = id;
-            r.innerHTML = `<input type="text" placeholder="항목명" value="${k}" oninput="renderAll()"><input type="text" placeholder="내용" value="${v}" oninput="renderAll()"><button class="rm" onclick="document.getElementById('${id}')?.remove();efIds=efIds.filter(x=>x!=='${id}');renderAll()">×</button>`;
+            r.innerHTML = `<input type="text" placeholder="항목명" value="${k}" oninput="renderAll()"><textarea placeholder="내용" oninput="renderAll()">${v}</textarea><button class="rm" onclick="document.getElementById('${id}')?.remove();efIds=efIds.filter(x=>x!=='${id}');renderAll()">×</button>`;
             wrap.appendChild(r); renderAll();
         }
-        function getEFs() { return efIds.map(id => { const r = document.getElementById(id); if (!r) return null; const ins = r.querySelectorAll('input'); return { k: ins[0]?.value || '', v: ins[1]?.value || '' }; }).filter(x => x && (x.k || x.v)); }
+        function getEFs() { return efIds.map(id => { const r = document.getElementById(id); if (!r) return null; const kInput = r.querySelector('input'); const vArea = r.querySelector('textarea'); return { k: kInput?.value || '', v: vArea?.value || '' }; }).filter(x => x && (x.k || x.v)); }
         function fv(id) { return document.getElementById(id)?.value || ''; }
         function getData() { return { title: fv('f-title') || 'Program Title', subtitle: fv('f-subtitle'), date: fv('f-date'), time: fv('f-time'), venue: fv('f-venue'), org: fv('f-org'), effect: fv('f-effect'), parts: getParts(), extras: getEFs() }; }
 
@@ -583,14 +583,25 @@
         function vline(c, x, y, h, col, lw) { c.save(); c.strokeStyle = col || '#ccc'; c.lineWidth = lw || 1; c.beginPath(); c.moveTo(x, y); c.lineTo(x, y + h); c.stroke(); c.restore(); }
         function wrapLines(c, txt, x, y, maxW, lh, maxL) {
             maxL = maxL || 99;
-            const words = txt.split(' '); let line = '', ly = y, n = 0;
-            for (const w of words) {
-                if (n >= maxL) break;
-                const t = line ? line + ' ' + w : w;
-                if (c.measureText(t).width > maxW && line) { c.fillText(line, x, ly); line = w; ly += lh; n++; } else line = t;
+            const paras = txt.split('\n');
+            let ly = y, n = 0;
+            for (const para of paras) {
+                const words = para.split(' ');
+                let line = '';
+                for (const w of words) {
+                    if (n >= maxL) break;
+                    const t = line ? line + ' ' + w : w;
+                    if (c.measureText(t).width > maxW && line) {
+                        c.fillText(line, x, ly);
+                        line = w; ly += lh; n++;
+                    } else line = t;
+                }
+                if (line && n < maxL) {
+                    c.fillText(line, x, ly);
+                    ly += lh; n++;
+                }
             }
-            if (line && n < maxL) c.fillText(line, x, ly);
-            return ly + lh;
+            return ly;
         }
         function rrect(c, x, y, w, h, r) {
             c.beginPath(); c.moveTo(x + r, y); c.lineTo(x + w - r, y); c.quadraticCurveTo(x + w, y, x + w, y + r);
@@ -662,12 +673,20 @@
             }
             const exts = d.extras || [];
             if (exts.length) {
-                hline(c, P, curY + 8, W - P * 2, '#ccc', 1); curY += 36;
-                exts.slice(0, 6).forEach(({ k, v }) => {
-                    c.fillStyle = '#999'; c.font = 'bold 24px Space Grotesk,sans-serif'; c.textAlign = 'left'; c.textBaseline = 'top';
-                    c.fillText((k || '').toUpperCase(), P, curY);
+                hline(c, P, curY + 8, W - P * 2, '#ccc', 1); curY += 48;
+                exts.forEach(({ k, v }) => {
+                    const ltxt = k.toUpperCase();
+                    c.font = 'bold 24px Space Grotesk,sans-serif';
+                    const lw = c.measureText(ltxt).width + 52;
+                    c.fillStyle = INK; rrect(c, P, curY, lw, 52, 26); c.fill();
+                    c.fillStyle = '#fff'; c.textAlign = 'center'; c.textBaseline = 'middle';
+                    c.fillText(ltxt, P + lw / 2, curY + 26);
+
                     c.fillStyle = INK; c.font = '500 32px Space Grotesk,sans-serif';
-                    c.fillText(v.length > 20 ? v.slice(0, 20) + '…' : v, P + 220, curY + 2); curY += 50;
+                    c.textAlign = 'left'; c.textBaseline = 'top';
+                    const vx = P + lw + 24, vw = W - vx - P;
+                    const ny = wrapLines(c, v, vx, curY + 4, vw, 42, 8);
+                    curY = Math.max(ny + 24, curY + 74);
                 });
             }
             hline(c, P, H - 80, W - P * 2, INK, 2); c.fillStyle = AC; c.fillRect(P, H - 80, 56, 4);
