@@ -540,6 +540,38 @@
         .dragging {
             opacity: 0.35;
         }
+
+        /* 임시저장 인디케이터 */
+        .save-indicator {
+            font-size: 10px;
+            color: var(--text-sec);
+            opacity: 0.6;
+            text-align: center;
+            margin-top: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            min-height: 14px;
+        }
+
+        /* 토스트 알림 */
+        #toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e293b;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 600;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.3s;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            border: 1px solid #313844;
+            pointer-events: none;
+            white-space: nowrap;
+        }
     </style>
 </head>
 
@@ -611,9 +643,12 @@
             </div>
 
             <div class="btns">
+                <button class="act" onclick="saveTemp()">임시저장</button>
+                <button class="act" onclick="loadTemp()">불러오기</button>
                 <button class="act" onclick="renderAll()">미리보기 갱신</button>
                 <button class="act pri" onclick="dlAll()">PNG 저장 ↓</button>
             </div>
+            <div class="save-indicator" id="save-indicator"></div>
         </div>
 
         <div class="main">
@@ -650,6 +685,7 @@
         </div>
     </div>
 
+    <div id="toast"></div>
     <script>
         const SW = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#6366f1', '#14b8a6'];
         const PRE = { general: '#3b82f6', workshop: '#10b981', seminar: '#f59e0b', symposium: '#ef4444', conference: '#8b5cf6' };
@@ -1225,6 +1261,100 @@
             c.restore();
         }
 
+        // ─── 임시저장 ─────────────────────────────────────────────
+        let autoSaveTimer = null;
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.style.opacity = '1';
+            clearTimeout(t._t);
+            t._t = setTimeout(() => { t.style.opacity = '0'; }, 2500);
+        }
+
+        function updateSaveIndicator() {
+            const raw = localStorage.getItem('edu_poster_temp');
+            if (!raw) return;
+            const { savedAt } = JSON.parse(raw);
+            if (!savedAt) return;
+            const el = document.getElementById('save-indicator');
+            if (el) el.textContent = '자동저장: ' + new Date(savedAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        }
+
+        function saveToStorage() {
+            const state = {
+                fields: {},
+                sections: {
+                    effect: isSectionVisible('effect-section'),
+                    parts: isSectionVisible('parts-section')
+                },
+                parts: partIds.map(id => {
+                    const b = document.getElementById(id); if (!b) return null;
+                    return {
+                        title: b.querySelector('.part-head input')?.value || '',
+                        subs: [...b.querySelectorAll('.subs-wrap input')].map(x => x.value)
+                    };
+                }).filter(Boolean),
+                extras: efIds.map(id => {
+                    const r = document.getElementById(id); if (!r) return null;
+                    return { k: r.querySelector('input')?.value || '', v: r.querySelector('textarea')?.value || '' };
+                }).filter(Boolean),
+                color: AC,
+                preset: document.querySelector('#pre-row .bdg.on')?.dataset?.p || 'general',
+                savedAt: Date.now()
+            };
+            ['f-title', 'f-subtitle', 'f-date', 'f-time', 'f-venue', 'f-org', 'f-effect'].forEach(id => {
+                state.fields[id] = document.getElementById(id)?.value || '';
+            });
+            localStorage.setItem('edu_poster_temp', JSON.stringify(state));
+            updateSaveIndicator();
+        }
+
+        function debouncedAutoSave() {
+            clearTimeout(autoSaveTimer);
+            autoSaveTimer = setTimeout(saveToStorage, 1000);
+        }
+
+        function saveTemp() {
+            saveToStorage();
+            showToast('임시저장 완료!');
+        }
+
+        function loadTemp() {
+            const raw = localStorage.getItem('edu_poster_temp');
+            if (!raw) { showToast('저장된 데이터가 없습니다'); return; }
+            const state = JSON.parse(raw);
+
+            Object.entries(state.fields || {}).forEach(([id, val]) => {
+                const el = document.getElementById(id); if (el) el.value = val;
+            });
+
+            if (state.sections) {
+                state.sections.effect ? restoreSection('effect-section') : (() => { const w = document.getElementById('effect-section'); if (w) w.classList.add('hidden-section'); })();
+                state.sections.parts ? restoreSection('parts-section') : (() => { const w = document.getElementById('parts-section'); if (w) w.classList.add('hidden-section'); })();
+            }
+
+            document.getElementById('parts-wrap').innerHTML = '';
+            partIds = []; partCount = 0; subCount = 0;
+            (state.parts || []).forEach(p => addPart(p.title, p.subs || []));
+
+            document.getElementById('ef-wrap').innerHTML = '';
+            efIds = []; efCount = 0;
+            (state.extras || []).forEach(e => addEF(e.k, e.v));
+
+            if (state.color) setColor(state.color, false);
+
+            if (state.preset) {
+                document.querySelectorAll('#pre-row .bdg').forEach(b => {
+                    b.classList.toggle('on', b.dataset.p === state.preset);
+                });
+            }
+
+            renderAll();
+            const t = state.savedAt ? new Date(state.savedAt).toLocaleString('ko-KR') : '';
+            showToast('불러오기 완료' + (t ? '  (' + t + ')' : ''));
+        }
+
         function renderAll() {
             const d = getData();
             let posterH = 1920;
@@ -1242,6 +1372,7 @@
                 if (el) el.textContent = badgeText;
             });
             ['cvT', 'cvT2'].forEach(id => { const cv = document.getElementById(id); if (cv) drawThumb(cv, d); });
+            debouncedAutoSave();
         }
 
         function dlAll() {
@@ -1263,15 +1394,49 @@
         }
 
         initSW(); initPRE();
-        addPart('쌍방향 소통 기술', ['업무효율 극대화를 위한 소통의 중요성', '팀내 소통문제 해결 기법']);
-        addPart('성과창출 리더십', ['리더십 발휘와 업무성과 연관성', '리더십을 통한 조직 및 업무 역량 강화']);
-        addPart('공정 객관적 성과평가', ['성과 평가와 성과창출 연관성', '공정객관적 성과평가 방법']);
-        addEF('강사', '김태식 교수(소부장기술융합포럼 교육전문위원)');
-        addEF('정원', '20명');
-        addEF('교육비', '1인당 20만원(중식미포함)');
-        addEF('입금계좌', '하나은행 404-910018-29204 소부장기술융합연구조합');
-        addEF('신청방법', '교육신청페이지에서 신청');
-        addEF('문의', '사무국(sobujang@starc.co.kr)');
+
+        // 임시저장 데이터가 있으면 자동 복원, 없으면 기본값으로 초기화
+        const _saved = localStorage.getItem('edu_poster_temp');
+        if (_saved) {
+            try {
+                const _state = JSON.parse(_saved);
+                Object.entries(_state.fields || {}).forEach(([id, val]) => {
+                    const el = document.getElementById(id); if (el) el.value = val;
+                });
+                if (_state.sections) {
+                    if (!_state.sections.effect) { const w = document.getElementById('effect-section'); if (w) w.classList.add('hidden-section'); }
+                    if (!_state.sections.parts) { const w = document.getElementById('parts-section'); if (w) w.classList.add('hidden-section'); }
+                }
+                (_state.parts || []).forEach(p => addPart(p.title, p.subs || []));
+                (_state.extras || []).forEach(e => addEF(e.k, e.v));
+                if (_state.color) setColor(_state.color, false);
+                if (_state.preset) {
+                    document.querySelectorAll('#pre-row .bdg').forEach(b => b.classList.toggle('on', b.dataset.p === _state.preset));
+                }
+                updateSaveIndicator();
+            } catch (e) {
+                // 파싱 오류 시 기본값 사용
+                addPart('쌍방향 소통 기술', ['업무효율 극대화를 위한 소통의 중요성', '팀내 소통문제 해결 기법']);
+                addPart('성과창출 리더십', ['리더십 발휘와 업무성과 연관성', '리더십을 통한 조직 및 업무 역량 강화']);
+                addPart('공정 객관적 성과평가', ['성과 평가와 성과창출 연관성', '공정객관적 성과평가 방법']);
+                addEF('강사', '김태식 교수(소부장기술융합포럼 교육전문위원)');
+                addEF('정원', '20명'); addEF('교육비', '1인당 20만원(중식미포함)');
+                addEF('입금계좌', '하나은행 404-910018-29204 소부장기술융합연구조합');
+                addEF('신청방법', '교육신청페이지에서 신청');
+                addEF('문의', '사무국(sobujang@starc.co.kr)');
+            }
+        } else {
+            addPart('쌍방향 소통 기술', ['업무효율 극대화를 위한 소통의 중요성', '팀내 소통문제 해결 기법']);
+            addPart('성과창출 리더십', ['리더십 발휘와 업무성과 연관성', '리더십을 통한 조직 및 업무 역량 강화']);
+            addPart('공정 객관적 성과평가', ['성과 평가와 성과창출 연관성', '공정객관적 성과평가 방법']);
+            addEF('강사', '김태식 교수(소부장기술융합포럼 교육전문위원)');
+            addEF('정원', '20명');
+            addEF('교육비', '1인당 20만원(중식미포함)');
+            addEF('입금계좌', '하나은행 404-910018-29204 소부장기술융합연구조합');
+            addEF('신청방법', '교육신청페이지에서 신청');
+            addEF('문의', '사무국(sobujang@starc.co.kr)');
+        }
+
         ['f-title', 'f-subtitle', 'f-date', 'f-time', 'f-venue', 'f-org', 'f-effect'].forEach(id => {
             document.getElementById(id)?.addEventListener('input', renderAll);
         });
