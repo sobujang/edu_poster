@@ -552,6 +552,75 @@
             min-height: 14px;
         }
 
+        /* 템플릿 목록 */
+        #template-list {
+            margin-top: 8px;
+        }
+        .tpl-empty {
+            font-size: 11px;
+            color: var(--text-sec);
+            text-align: center;
+            padding: 10px 0;
+            opacity: 0.6;
+        }
+        .tpl-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 8px 10px;
+            margin-bottom: 6px;
+        }
+        .tpl-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+        }
+        .tpl-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-pri);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 120px;
+        }
+        .tpl-date {
+            font-size: 10px;
+            color: var(--text-sec);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .tpl-actions {
+            display: flex;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+        .tpl-btn {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 9px;
+            border-radius: 20px;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-sec);
+            transition: all 0.2s;
+        }
+        .tpl-btn.load:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: var(--accent-soft);
+        }
+        .tpl-btn.del:hover {
+            border-color: #ef4444;
+            color: #ef4444;
+            background: rgba(239,68,68,0.1);
+        }
+
         /* 토스트 알림 */
         #toast {
             position: fixed;
@@ -641,6 +710,10 @@
                 <span class="bdg" data-p="symposium">심포지엄</span>
                 <span class="bdg" data-p="conference">컨퍼런스</span>
             </div>
+
+            <p class="sec">템플릿 관리</p>
+            <button class="act" style="width:100%;margin-bottom:8px" onclick="saveTemplate()">+ 현재 상태를 템플릿으로 저장</button>
+            <div id="template-list"><p class="tpl-empty">저장된 템플릿이 없습니다</p></div>
 
             <div class="btns">
                 <button class="act" onclick="saveTemp()">임시저장</button>
@@ -1002,7 +1075,7 @@
             // 9. Footer (fixed 120px)
             curY += 80; // padding before footer
             const footerH = 120;
-            return Math.max(1920, curY + footerH + 60);
+            return Math.max(600, curY + footerH + 60);
         }
 
         function drawPoster(cv, d) {
@@ -1281,7 +1354,8 @@
             if (el) el.textContent = '자동저장: ' + new Date(savedAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
         }
 
-        function saveToStorage() {
+        // ─── 상태 직렬화 / 복원 헬퍼 ─────────────────────────────
+        function getCurrentState() {
             const state = {
                 fields: {},
                 sections: {
@@ -1306,25 +1380,10 @@
             ['f-title', 'f-subtitle', 'f-date', 'f-time', 'f-venue', 'f-org', 'f-effect'].forEach(id => {
                 state.fields[id] = document.getElementById(id)?.value || '';
             });
-            localStorage.setItem('edu_poster_temp', JSON.stringify(state));
-            updateSaveIndicator();
+            return state;
         }
 
-        function debouncedAutoSave() {
-            clearTimeout(autoSaveTimer);
-            autoSaveTimer = setTimeout(saveToStorage, 1000);
-        }
-
-        function saveTemp() {
-            saveToStorage();
-            showToast('임시저장 완료!');
-        }
-
-        function loadTemp() {
-            const raw = localStorage.getItem('edu_poster_temp');
-            if (!raw) { showToast('저장된 데이터가 없습니다'); return; }
-            const state = JSON.parse(raw);
-
+        function applyState(state) {
             Object.entries(state.fields || {}).forEach(([id, val]) => {
                 const el = document.getElementById(id); if (el) el.value = val;
             });
@@ -1351,13 +1410,94 @@
             }
 
             renderAll();
+        }
+
+        function saveToStorage() {
+            const state = getCurrentState();
+            localStorage.setItem('edu_poster_temp', JSON.stringify(state));
+            updateSaveIndicator();
+        }
+
+        function debouncedAutoSave() {
+            clearTimeout(autoSaveTimer);
+            autoSaveTimer = setTimeout(saveToStorage, 1000);
+        }
+
+        function saveTemp() {
+            saveToStorage();
+            showToast('임시저장 완료!');
+        }
+
+        function loadTemp() {
+            const raw = localStorage.getItem('edu_poster_temp');
+            if (!raw) { showToast('저장된 데이터가 없습니다'); return; }
+            const state = JSON.parse(raw);
+            applyState(state);
             const t = state.savedAt ? new Date(state.savedAt).toLocaleString('ko-KR') : '';
             showToast('불러오기 완료' + (t ? '  (' + t + ')' : ''));
         }
 
+        // ─── 템플릿 저장/관리 ────────────────────────────────────
+        const TEMPLATES_KEY = 'edu_poster_templates';
+
+        function getTemplates() {
+            try { return JSON.parse(localStorage.getItem(TEMPLATES_KEY)) || []; } catch { return []; }
+        }
+
+        function saveTemplate() {
+            const name = window.prompt('템플릿 이름을 입력하세요 (기존 이름이면 덮어씁니다):', '');
+            if (!name || !name.trim()) return;
+            const trimmed = name.trim();
+            const state = getCurrentState();
+            const templates = getTemplates().filter(t => t.name !== trimmed);
+            templates.unshift({ name: trimmed, savedAt: Date.now(), state });
+            localStorage.setItem(TEMPLATES_KEY, JSON.stringify(templates));
+            renderTemplateList();
+            showToast(`"${trimmed}" 템플릿 저장 완료!`);
+        }
+
+        function loadTemplate(name) {
+            const found = getTemplates().find(t => t.name === name);
+            if (!found) return;
+            applyState(found.state);
+            showToast(`"${name}" 불러오기 완료`);
+        }
+
+        function deleteTemplate(name) {
+            if (!window.confirm(`"${name}" 템플릿을 삭제할까요?`)) return;
+            const templates = getTemplates().filter(t => t.name !== name);
+            localStorage.setItem(TEMPLATES_KEY, JSON.stringify(templates));
+            renderTemplateList();
+            showToast(`"${name}" 삭제됨`);
+        }
+
+        function renderTemplateList() {
+            const wrap = document.getElementById('template-list');
+            if (!wrap) return;
+            const templates = getTemplates();
+            if (!templates.length) {
+                wrap.innerHTML = '<p class="tpl-empty">저장된 템플릿이 없습니다</p>';
+                return;
+            }
+            wrap.innerHTML = templates.map(t => {
+                const safeName = t.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+                const dateStr = new Date(t.savedAt).toLocaleDateString('ko-KR');
+                return `<div class="tpl-item">
+                    <div class="tpl-info">
+                        <span class="tpl-name" title="${t.name}">${t.name}</span>
+                        <span class="tpl-date">${dateStr}</span>
+                    </div>
+                    <div class="tpl-actions">
+                        <button class="tpl-btn load" onclick="loadTemplate('${safeName}')">불러오기</button>
+                        <button class="tpl-btn del" onclick="deleteTemplate('${safeName}')">삭제</button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
         function renderAll() {
             const d = getData();
-            let posterH = 1920;
+            let posterH = 600;
             ['cvP', 'cvP2'].forEach(id => {
                 const cv = document.getElementById(id);
                 if (cv) {
@@ -1440,6 +1580,7 @@
         ['f-title', 'f-subtitle', 'f-date', 'f-time', 'f-venue', 'f-org', 'f-effect'].forEach(id => {
             document.getElementById(id)?.addEventListener('input', renderAll);
         });
+        renderTemplateList();
         renderAll();
     </script>
 </body>
